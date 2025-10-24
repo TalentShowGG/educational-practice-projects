@@ -1,0 +1,223 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include <cctype>
+
+using namespace std;
+
+string savedMovie, savedColor;
+
+// Функция для преобразования строки в нижний регистр
+string toLower(const string& str) {
+    string result = str;
+    for (char& c : result) {
+        c = tolower(c);
+    }
+    return result;
+}
+
+// Функция для сохранения и вывода любимого фильма
+void handleFavoriteMovie() {
+    string movie;
+
+    cout << "Enter your favorite movie: ";
+    getline(cin, movie);
+
+    // Проверка на пустой ввод
+    while (movie.empty()) {
+        cout << "Movie cannot be empty. Enter your favorite movie: ";
+        getline(cin, movie);
+    }
+
+    cout << "Your favorite movie: " << movie << endl;
+    savedMovie = movie;
+}
+
+// Функция для сохранения и установки цвета текста
+void handleTextColor() {
+    map<string, string> colorCodes = {
+        // Цифры
+        {"0", "0"}, {"1", "1"}, {"2", "2"}, {"3", "3"}, {"4", "4"}, {"5", "5"}, {"6", "6"}, {"7", "7"},
+
+        // Полные названия (нижний регистр)
+        {"black", "0"}, {"blue", "1"}, {"green", "2"}, {"cyan", "3"},
+        {"red", "4"}, {"magenta", "5"}, {"yellow", "6"}, {"white", "7"},
+
+        // С заглавной буквы
+        {"Black", "0"}, {"Blue", "1"}, {"Green", "2"}, {"Cyan", "3"},
+        {"Red", "4"}, {"Magenta", "5"}, {"Yellow", "6"}, {"White", "7"},
+
+        // ВЕРХНИЙ РЕГИСТР
+        {"BLACK", "0"}, {"BLUE", "1"}, {"GREEN", "2"}, {"CYAN", "3"},
+        {"RED", "4"}, {"MAGENTA", "5"}, {"YELLOW", "6"}, {"WHITE", "7"},
+
+        // Смешанный регистр 1
+        {"Black", "0"}, {"Blue", "1"}, {"Green", "2"}, {"Cyan", "3"},
+        {"Red", "4"}, {"Magenta", "5"}, {"Yellow", "6"}, {"White", "7"},
+
+        // Смешанный регистр 2
+        {"bLACK", "0"}, {"bLUE", "1"}, {"gREEN", "2"}, {"cYAN", "3"},
+        {"rED", "4"}, {"mAGENTA", "5"}, {"yELLOW", "6"}, {"wHITE", "7"},
+
+        // Смешанный регистр 3
+        {"BLack", "0"}, {"BLue", "1"}, {"GReen", "2"}, {"CYan", "3"},
+        {"REd", "4"}, {"MAgenta", "5"}, {"YEllow", "6"}, {"WHite", "7"},
+
+        // Сокращения (нижний регистр)
+        {"blk", "0"}, {"bl", "0"}, {"b", "1"},
+        {"grn", "2"}, {"g", "2"},
+        {"cy", "3"}, {"c", "3"},
+        {"r", "4"},
+        {"mag", "5"}, {"m", "5"}, {"purple", "5"}, {"purp", "5"},
+        {"yel", "6"}, {"y", "6"},
+        {"wht", "7"}, {"w", "7"},
+
+        // Сокращения (верхний регистр)
+        {"BLK", "0"}, {"BL", "0"}, {"B", "1"},
+        {"GRN", "2"}, {"G", "2"},
+        {"CY", "3"}, {"C", "3"},
+        {"R", "4"},
+        {"MAG", "5"}, {"M", "5"}, {"PURPLE", "5"}, {"PURP", "5"},
+        {"YEL", "6"}, {"Y", "6"},
+        {"WHT", "7"}, {"W", "7"},
+
+        // Альтернативные названия
+        {"light blue", "3"}, {"lightblue", "3"}, {"light", "3"},
+        {"purple", "5"}, {"violet", "5"},
+        {"gray", "8"}, {"grey", "8"}
+    };
+
+    // Карта для отображения кодов в читаемые названия
+    map<string, string> colorNames = {
+        {"0", "Black"}, {"1", "Blue"}, {"2", "Green"}, {"3", "Cyan"},
+        {"4", "Red"}, {"5", "Magenta"}, {"6", "Yellow"}, {"7", "White"}
+    };
+
+    cout << "\nAvailable text colors:\n";
+    cout << "0 - Black\n";
+    cout << "1 - Blue\n";
+    cout << "2 - Green\n";
+    cout << "3 - Cyan (Light Blue)\n";
+    cout << "4 - Red\n";
+    cout << "5 - Magenta (Purple)\n";
+    cout << "6 - Yellow\n";
+    cout << "7 - White\n";
+    cout << "\nYou can enter: numbers, full names, or abbreviations\n";
+    cout << "Examples: 1, blue, BLUE, b, B, blu, etc.\n";
+
+    string color;
+    cout << "Enter text color: ";
+    getline(cin, color);
+
+    // Преобразуем в нижний регистр для поиска
+    string colorLower = toLower(color);
+
+    // Проверка корректности введенного цвета
+    while (colorCodes.find(color) == colorCodes.end() && colorCodes.find(colorLower) == colorCodes.end()) {
+        cout << "Invalid color. Please try again: ";
+        getline(cin, color);
+        colorLower = toLower(color);
+    }
+
+    // Определяем код цвета (проверяем оригинальный ввод, затем нижний регистр)
+    string colorCode;
+    if (colorCodes.find(color) !=
+
+colorCodes.end()) {
+        colorCode = colorCodes[color];
+    }
+    else {
+        colorCode = colorCodes[colorLower];
+    }
+
+    string colorName = colorNames[colorCode];
+
+    // Установка цвета текста (фон черный - 0, текст - выбранный цвет)
+    string command = "color 0" + colorCode;
+    system(command.c_str());
+
+    cout << "Text color set to: " << colorName << " (code: " << colorCode << ")" << endl;
+    savedColor = colorName;
+}
+
+// Функция для восстановления цвета текста при загрузке
+void restoreTextColor(const string& color) {
+    map<string, string> colorNamesToCodes = {
+        {"Black", "0"}, {"Blue", "1"}, {"Green", "2"}, {"Cyan", "3"},
+        {"Red", "4"}, {"Magenta", "5"}, {"Yellow", "6"}, {"White", "7"}
+    };
+
+    if (colorNamesToCodes.find(color) != colorNamesToCodes.end()) {
+        string command = "color 0" + colorNamesToCodes[color];
+        system(command.c_str());
+    }
+}
+
+// Функция для сохранения настроек в файл
+void saveSettings(const string& movie, const string& color) {
+    ofstream fout("settings_v13.txt");
+    if (fout.is_open()) {
+        fout << movie << endl;
+        fout << color << endl;
+        fout.close();
+        cout << "Settings saved to file!" << endl;
+    }
+    else {
+        cout << "Error saving settings!" << endl;
+    }
+}
+
+// Функция для загрузки настроек из файла
+bool loadSettings(string& movie, string& color) {
+    ifstream fin("settings_v13.txt");
+    if (fin.is_open()) {
+        getline(fin, movie);
+        getline(fin, color);
+        fin.close();
+        return true;
+    }
+    return false;
+}
+
+int main() {
+    setlocale(0, "en_US.UTF-8");
+
+    // Пытаемся загрузить сохраненные настройки
+    if (loadSettings(savedMovie, savedColor)) {
+        cout << "Loaded saved settings:" << endl;
+        cout << "Favorite movie: " << savedMovie << endl;
+        cout << "Text color: " << savedColor << endl;
+
+        // Восстанавливаем цвет текста
+        restoreTextColor(savedColor);
+
+        char choice;
+        cout << "\nDo you want to change settings? (y/n): ";
+        cin >> choice;
+        cin.ignore(); // Очищаем буфер после ввода символа
+
+        if (choice == 'y' || choice == 'Y') {
+            handleFavoriteMovie();
+            handleTextColor();
+
+            // Сохраняем новые настройки
+            saveSettings(savedMovie, savedColor);
+        }
+    }
+    else {
+        // Если файла нет, запрашиваем новые настройки
+        cout << "Settings file not found. Enter new settings:" << endl;
+        handleFavoriteMovie();
+        handleTextColor();
+
+        // Сохраняем настройки
+        saveSettings(savedMovie, savedColor);
+    }
+
+    cout << "\nProgram completed. Press Enter to exit...";
+    cin.ignore();
+    cin.get();
+
+    return 0;
+}
